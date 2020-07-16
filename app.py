@@ -25,6 +25,12 @@ def evaluate():
         file_url = file['url']
         
         ########## REPLACE THIS SECTION WITH OWN RUN CODE #################
+        ##IN THE SPECIAL CASE THAT THE EXTENSION HAS NO MIME TYPE USE SOMETHING LIKE THIS
+        #"""file_type = file_name.split('.')[-1]
+        #
+        ##types that can be converted to sbol by this plugin
+        #acceptable_types = {'.dna'}"""
+    
         #types that can be converted to sbol by this plugin
         acceptable_types = {'application/vnd.ms-excel',
                             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
