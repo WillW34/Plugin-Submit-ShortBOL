@@ -10,16 +10,8 @@ Check it is up using http://localhost:8087/status.
 Run pip install -r requirements.txt to install the requirements. Then run FLASK_APP=app python -m flask run. A flask module will run at http://localhost:5000/.
 
 # Testing
-To create a test manifest use (note that quotes must use " for postman):
+To create a test manifest use [this](https://github.com/SynBioHub/Submit-Testing/blob/master/Manifest_creation.py) script. For testing the getting of files a test server can be created using docker or the flask implementation in [this](https://github.com/SynBioHub/Submit-Testing) repository.
 
-```
-run_manifest = {"manifest":[]}
-for i in range(0,7):
-  file_name = f'file_name{i}'
-  file_type = f'file_type{i}'
-  file_url = f'file_url{i}'
-  run_manifest['manifest'].append({"url":file_url, "filename":file_name, "type":file_type})
-```
 Example manifest:
 ```
 {"manifest": {"files":[
