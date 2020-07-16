@@ -37,10 +37,10 @@ def evaluate():
         
         #types that are useful (will be served to the run endpoint too but noted that they won't be converted)
         useful_types = {'application/xml'}
-        ################## END SECTION ####################################
         
         file_type_acceptable = file_type in acceptable_types
         file_type_useable = file_type in useful_types
+        ################## END SECTION ####################################
         
         #to ensure all file types are accepted
         file_type_acceptable = True
