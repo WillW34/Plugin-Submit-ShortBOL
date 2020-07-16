@@ -25,16 +25,17 @@ def evaluate():
         file_url = file['url']
         
         ########## REPLACE THIS SECTION WITH OWN RUN CODE #################
+        #types that can be converted to sbol by this plugin
         acceptable_types = {'application/vnd.ms-excel',
                             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
         
-        #could change what appears in the useful_types based on the file content
+        #types that are useful (will be served to the run endpoint too but noted that they won't be converted)
         useful_types = {'application/xml'}
         
         file_type_acceptable = file_type in acceptable_types
         file_type_useable = file_type in useful_types
         
-        #to enseure all file types are accepted
+        #to ensure all file types are accepted
         file_type_acceptable = True
         ################## END SECTION ####################################
         
