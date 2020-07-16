@@ -114,12 +114,12 @@ def run():
             result = result.replace("REPLACE_FILETYPE", file_type)
             result = result.replace("REPLACE_FILEURL", file_url)
             result = result.replace("FILE_DATA_REPLACE", data)
-            result = result.replace("DATA_REPLACE", str(run_manifest))
+            sbolcontent = result.replace("DATA_REPLACE", str(run_manifest))
             ################## END SECTION ####################################
             
             #write out result to "To_zip" file
             with open(file_path_out, 'w') as xmlfile:
-                xmlfile.write(result)
+                xmlfile.write(sbolcontent)
             
             # add name of converted file to manifest
             run_response_manifest["results"].append({"filename":converted_file_name,
