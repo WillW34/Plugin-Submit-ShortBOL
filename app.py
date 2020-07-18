@@ -123,7 +123,7 @@ def run():
             
             # add name of converted file to manifest
             run_response_manifest["results"].append({"filename":converted_file_name,
-                                        "sources":[file_name]})
+                                        "sources":[file_name]}) #could be updated to include multiple sources in cases that useable but not convertable files are used
             
         except Exception as e:
             print(e)
