@@ -29,7 +29,7 @@ def evaluate():
         #"""file_type = file_name.split('.')[-1]
         #
         ##types that can be converted to sbol by this plugin
-        #acceptable_types = {'.dna'}"""
+        #acceptable_types = {'dna', 'docx', 'txt'}"""
     
         #types that can be converted to sbol by this plugin
         acceptable_types = {'application/vnd.ms-excel',
