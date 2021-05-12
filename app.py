@@ -1,5 +1,6 @@
 from flask import Flask, request, abort, send_file, jsonify
 import os, shutil, glob, random, string, tempfile
+from shortbol import run
 
 app = Flask(__name__)
 
