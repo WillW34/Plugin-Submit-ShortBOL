@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route("/status")
 def status():
-    return("The Submit Test Plugin Flask Server is up and running")
+    return("The Submit ShortBOL Test Plugin Flask Server is up and running")
 
 
 
@@ -29,11 +29,11 @@ def evaluate():
         #"""file_type = file_name.split('.')[-1]
         #
         ##types that can be converted to sbol by this plugin
-        #acceptable_types = {'dna', 'docx', 'txt'}"""
+        acceptable_types = {'docx', 'txt', 'shb'}
     
         #types that can be converted to sbol by this plugin
-        acceptable_types = {'application/vnd.ms-excel',
-                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
+        #acceptable_types = {'application/vnd.ms-excel',
+                            #'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
         
         #types that are useful (will be served to the run endpoint too but noted that they won't be converted)
         useful_types = {'application/xml'}
@@ -87,7 +87,7 @@ def run():
             file_url = a_file['url']
             data = str(a_file)
            
-            converted_file_name = f"{file_name}.converted"
+            converted_file_name = file_name + ".converted"
             file_path_out = os.path.join(zip_in_dir_name, converted_file_name)
             
             ########## REPLACE THIS SECTION WITH OWN RUN CODE #################
@@ -137,4 +137,4 @@ def run():
         shutil.rmtree(zip_in_dir_name)
         
         #return zip file
-        return send_file(f"{temp_file.name}.zip")
+        return send_file(temp_file.name + ".zip")
