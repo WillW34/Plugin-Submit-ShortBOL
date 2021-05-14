@@ -1,5 +1,7 @@
 from flask import Flask, request, abort, send_file, jsonify
 import os, shutil, glob, random, string, tempfile
+import sys
+sys.path.insert(0,'shortbol')
 from shortbol import run
 
 app = Flask(__name__)
@@ -30,20 +32,19 @@ def evaluate():
         #"""file_type = file_name.split('.')[-1]
         #
         ##types that can be converted to sbol by this plugin
-        acceptable_types = {'docx', 'txt', 'shb'}
+        acceptable_types = {'txt', 'shb', 'rdfsh'}
     
         #types that can be converted to sbol by this plugin
         #acceptable_types = {'application/vnd.ms-excel',
                             #'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
         
         #types that are useful (will be served to the run endpoint too but noted that they won't be converted)
-        useful_types = {'application/xml'}
+        useful_types = {'text/plain'}
         
         file_type_acceptable = file_type in acceptable_types
         file_type_useable = file_type in useful_types
+        print(file_type_acceptable,file_type_useable)
         
-        #to ensure all file types are accepted
-        file_type_acceptable = True
         ################## END SECTION ####################################
         
         if file_type_acceptable:
@@ -52,11 +53,11 @@ def evaluate():
             useableness = 1
         else:
             useableness = 0
-        
+
         eval_response_manifest["manifest"].append({
             "filename": file_name,
             "requirement": useableness})
-       
+             
     return jsonify(eval_response_manifest)
     
 @app.route("/run", methods=["POST"])
@@ -71,15 +72,9 @@ def run():
     #take in run manifest
     run_manifest = request.get_json(force=True)
     files = run_manifest['manifest']['files']
-    
-    #Read in template to compare to
-    template_path = os.path.join(cwd, "templates", "darpa_template_blank.xlsx")
-    
+        
     #initiate response manifest
     run_response_manifest = {"results":[]}
-    
-    #Remove this line if not needed
-    file_path = os.path.join(cwd, "Test.xml")
     
     for a_file in files:
         try:
@@ -92,29 +87,12 @@ def run():
             file_path_out = os.path.join(zip_in_dir_name, converted_file_name)
             
             ########## REPLACE THIS SECTION WITH OWN RUN CODE #################
-            #read in Test.xml
-            with open(file_path, 'r') as xmlfile:
-                result = xmlfile.read()
-            
-            #create random string of letters that is 15 long for display_id
-            length = 15
-            letters = string.ascii_lowercase
-            result_str = ''.join(random.choice(letters) for i in range(length))
-            display_id = result_str
-                    
-            #put in the url, filename, and instance given by synbiohub
-            result = result.replace("TEST_FILE", file_name)
-            result = result.replace("REPLACE_DISPLAYID", display_id)
-            result = result.replace("REPLACE_FILENAME", file_name)
-            result = result.replace("REPLACE_FILETYPE", file_type)
-            result = result.replace("REPLACE_FILEURL", file_url)
-            result = result.replace("FILE_DATA_REPLACE", data)
-            sbolcontent = result.replace("DATA_REPLACE", str(run_manifest))
+            #check data is ShortBOL, write to temp_file
+            #parse_from_file with temp_file
+            #take output 'out' = file_path_out
+            shortbol.run(temp_file, out=file_path_out)
+
             ################## END SECTION ####################################
-            
-            #write out result to "To_zip" file
-            with open(file_path_out, 'w') as xmlfile:
-                xmlfile.write(sbolcontent)
         
             # add name of converted file to manifest
             run_response_manifest["results"].append({"filename":converted_file_name,
