@@ -2,7 +2,7 @@ from flask import Flask, request, abort, send_file, jsonify
 import os, shutil, glob, random, string, tempfile
 import sys
 sys.path.insert(0,'shortbol')
-from shortbol import run
+import shortbol
 
 app = Flask(__name__)
 
@@ -88,9 +88,13 @@ def run():
             
             ########## REPLACE THIS SECTION WITH OWN RUN CODE #################
             #check data is ShortBOL, write to temp_file
+            temp_file = tempfile.TemporaryFile()
+            temp_file.write(data)
+
             #parse_from_file with temp_file
             #take output 'out' = file_path_out
-            shortbol.run(temp_file, out=file_path_out)
+            shortbol.run.parse_from_file(temp_file, out=file_path_out)
+            
 
             ################## END SECTION ####################################
         

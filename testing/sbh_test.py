@@ -2,18 +2,24 @@ import requests
 import urllib
 
 
-url = "http://127.0.0.1:5000/evaluate"
-manifest = """{"manifest": {"files":[
-            {"url": "http://synbiohub.org/expose/b41e63d6-10f4-4cac-b1c8-285f71156b56", "filename": "asdfasdf.xls", "type": "application/vnd.ms-excel"},
-            {"url": "http://synbiohub.org/expose/jkl9d8s7ufjqhoer8u709s", "filename": "file_name1.dna", "type": "application/xml"},
-            {"url": "http://synbiohub.org/expose/basdf-11230948f4-12344cac", "filename": "file_name2.xml", "type": "application/xml"},
-            {"url": "http://synbiohub.org/expose/09uj2k3j0", "filename": "file_name3.shb", "type": "application/xml"},
-            {"url": "http://synbiohub.org/expose/asdfasdf56", "filename": "file_name4.xml", "type": "application/xml"}]}}"""
+eval_url = "http://127.0.0.1:8080/evaluate"
+run_url = "http://127.0.0.1:8080/run"
+succeed_url = "http://127.0.0.1:5000/public/plugintest.txt"
+manifest = """{"manifest": 
+                {"files": 
+                [{"url": "http://localhost:5000/public/Test.dna", "filename": "Test.dna", "type": "application/vnd.dna"}, 
+                {"url": "http://localhost:5000/public/plugintest.txt", "filename": "plugintest.txt", "type": "text/plain"}, 
+                {"url": "http://localhost:5000/public/darpa_template.xlsx", "filename": "darpa_template.xlsx", "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}]}}"""
+
+#data should be returned from http://127.0.0.1:5000/public/plugintest.txt
+run_data = requests.post(succeed_url)
 
 
 def test():
-    response = requests.post(url,data=manifest)
-    print(response.text)
+    eval_response = requests.post(eval_url,data=manifest)
+    run_response = requests.post(run_url, data=run_data)
+    print(eval_response.text)
+    print(run_response.text)
 
 
 if __name__ == "__main__":test()
