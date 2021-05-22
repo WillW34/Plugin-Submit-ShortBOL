@@ -1,10 +1,11 @@
 from flask import Flask, request, abort, send_file, jsonify
-import os, shutil, glob, random, string, tempfile
+import os, shutil, glob, random, string, tempfile, requests
 import sys
 sys.path.insert(0,'shortbol')
-import shortbol
+import shortbol.run as shb_run
 
 app = Flask(__name__)
+shortbol_libs = os.path.join("shortbol", "templates")
 
 @app.route("/status")
 def status():
@@ -62,7 +63,6 @@ def evaluate():
     
 @app.route("/run", methods=["POST"])
 def run():
-
     cwd = os.getcwd()
     
     #create a temporary directory
@@ -75,49 +75,47 @@ def run():
         
     #initiate response manifest
     run_response_manifest = {"results":[]}
-    
+
     for a_file in files:
-        try:
-            file_name = a_file['filename']
-            file_type = a_file['type']
-            file_url = a_file['url']
-            data = str(a_file)
-           
-            converted_file_name = file_name + ".converted"
-            file_path_out = os.path.join(zip_in_dir_name, converted_file_name)
-            
-            ########## REPLACE THIS SECTION WITH OWN RUN CODE #################
-            #check data is ShortBOL, write to temp_file
-            temp_file = tempfile.TemporaryFile()
-            temp_file.write(data)
-
-            #parse_from_file with temp_file
-            #take output 'out' = file_path_out
-            shortbol.run.parse_from_file(temp_file, out=file_path_out)
-            
-
-            ################## END SECTION ####################################
+        file_name = a_file['filename']
+        file_type = a_file['type']
+        file_url = a_file['url']
+        data = str(a_file)
         
-            # add name of converted file to manifest
-            run_response_manifest["results"].append({"filename":converted_file_name,
-                                    "sources":[file_name]})
+        converted_file_name = file_name + ".converted"
+        file_path_out = os.path.join(zip_in_dir_name, converted_file_name)
+        
+        ########## REPLACE THIS SECTION WITH OWN RUN CODE #################
+        
+        #Retrieve file from manifest
+        run_data = requests.get(file_url)
 
-        except Exception as e:
-            print(e)
-            abort(415)
+        #Write string of file to temporary file
+        sbh_file = tempfile.NamedTemporaryFile(mode='w+t')
+        sbh_file.writelines(run_data.text)
+
+        #Run shortbol with temp file
+        shb_run.parse_from_file(sbh_file.name, out=file_path_out, optpaths = [shortbol_libs])
+        
+        ################## END SECTION ####################################
+    
+        # add name of converted file to manifest
+        run_response_manifest["results"].append({"filename":converted_file_name,
+                                "sources":[file_name]})
+
+
             
     #create manifest file
     file_path_out = os.path.join(zip_in_dir_name, "manifest.json")
     with open(file_path_out, 'w') as manifest_file:
             manifest_file.write(str(run_response_manifest)) 
       
-    
     with tempfile.NamedTemporaryFile() as temp_file:
         #create zip file of converted files and manifest
         shutil.make_archive(temp_file.name, 'zip', zip_in_dir_name)
         
         #delete zip in directory
-        shutil.rmtree(zip_in_dir_name)
+        #shutil.rmtree(zip_in_dir_name)
         
         #return zip file
         return send_file(temp_file.name + ".zip")
