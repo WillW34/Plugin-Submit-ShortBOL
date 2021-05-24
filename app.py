@@ -89,20 +89,20 @@ def run():
         
         #Retrieve file from manifest
         run_data = requests.get(file_url)
-
         #Write string of file to temporary file
-        sbh_file = tempfile.NamedTemporaryFile(mode='w+t')
-        sbh_file.writelines(run_data.text)
+        with tempfile.NamedTemporaryFile(mode='w+t') as sbh_file:
+            sbh_file.writelines(run_data.text)
+            sbh_file.seek(0)
+            #Run shortbol with temp file    
+            shb_run.parse_from_file(sbh_file.name, out=file_path_out, optpaths = [shortbol_libs])
 
-        #Run shortbol with temp file
-        shb_run.parse_from_file(sbh_file.name, out=file_path_out, optpaths = [shortbol_libs])
-        
+
         ################## END SECTION ####################################
     
         # add name of converted file to manifest
         run_response_manifest["results"].append({"filename":converted_file_name,
                                 "sources":[file_name]})
-
+            
 
             
     #create manifest file
