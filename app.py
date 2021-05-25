@@ -6,6 +6,9 @@ import shortbol.run as shb_run
 
 app = Flask(__name__)
 shortbol_libs = os.path.join("shortbol", "templates")
+tempdir = "tempdir"
+if not os.path.isdir(tempdir):
+    os.mkdir(tempdir)
 
 @app.route("/status")
 def status():
@@ -89,13 +92,11 @@ def run():
         
         #Retrieve file from manifest
         run_data = requests.get(file_url)
-        #Write string of file to temporary file
-        with tempfile.NamedTemporaryFile(mode='w+t') as sbh_file:
-            sbh_file.writelines(run_data.text)
-            sbh_file.seek(0)
-            #Run shortbol with temp file    
-            shb_run.parse_from_file(sbh_file.name, out=file_path_out, optpaths = [shortbol_libs])
-
+        sbh_input = os.path.join(tempdir,"temp_shb.shb")
+        with open(sbh_input,"a+") as sbh_file:
+            sbh_file.write(run_data.text)
+        shb_run.parse_from_file(sbh_file.name, out=file_path_out, optpaths = [shortbol_libs])
+        os.remove(sbh_input)
 
         ################## END SECTION ####################################
     
