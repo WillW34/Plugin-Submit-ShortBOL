@@ -13,6 +13,7 @@ COPY . .
 EXPOSE 5000
 
 RUN pip3 install -r requirements.txt
+RUN cd shortbol && python3 setup.py install --user && cd ..
 
 ENV FLASK_APP=app.py
 
