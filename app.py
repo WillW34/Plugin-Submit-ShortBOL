@@ -6,9 +6,6 @@ import shortbol.run as shb_run
 
 app = Flask(__name__)
 shortbol_libs = os.path.join("shortbol", "templates")
-tempdir = "tempdir"
-if not os.path.isdir(tempdir):
-    os.mkdir(tempdir)
 
 @app.route("/status")
 def status():
@@ -92,11 +89,10 @@ def run():
         
         #Retrieve file from manifest
         run_data = requests.get(file_url)
-        sbh_input = os.path.join(tempdir,"temp_shb.shb")
-        with open(sbh_input,"a+") as sbh_file:
+        sbh_input = os.path.join(temp_dir.name,"temp_shb.shb")
+        with open(sbh_input,"w+") as sbh_file:
             sbh_file.write(run_data.text)
-        shb_run.parse_from_file(sbh_file.name, out=file_path_out, optpaths = [shortbol_libs])
-        os.remove(sbh_input)
+        shb_run.parse_from_file(sbh_file.name, out=file_path_out, optpaths=[shortbol_libs])
 
         ################## END SECTION ####################################
     
@@ -105,7 +101,8 @@ def run():
                                 "sources":[file_name]})
             
 
-            
+
+
     #create manifest file
     file_path_out = os.path.join(zip_in_dir_name, "manifest.json")
     with open(file_path_out, 'w') as manifest_file:
@@ -117,6 +114,5 @@ def run():
         
         #delete zip in directory
         #shutil.rmtree(zip_in_dir_name)
-        
         #return zip file
         return send_file(temp_file.name + ".zip")
