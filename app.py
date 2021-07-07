@@ -33,14 +33,14 @@ def evaluate():
         #"""file_type = file_name.split('.')[-1]
         #
         ##types that can be converted to sbol by this plugin
-        acceptable_types = {'text/plain'}
+        acceptable_types = {'txt', 'shb', 'rdfsh'}
     
         #types that can be converted to sbol by this plugin
         #acceptable_types = {'application/vnd.ms-excel',
                             #'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
         
         #types that are useful (will be served to the run endpoint too but noted that they won't be converted)
-        useful_types = {'text/plain'}
+        useful_types = {'txt', 'shb', 'rdfsh'}
         
         file_type_acceptable = file_type in acceptable_types
         file_type_useable = file_type in useful_types
@@ -88,10 +88,10 @@ def run():
         
         #Retrieve file from manifest
         run_data = requests.get(file_url)
-        sbh_input = os.path.join(temp_dir.name,"temp_shb.shb")
-        with open(sbh_input,"w+") as sbh_file:
+        sbh_input = os.path.join(temp_dir.name,"temp_shb.txt")
+        with open(sbh_input,"w") as sbh_file:
             sbh_file.write(run_data.text)
-        shb_run.parse_from_file(sbh_file.name, out=file_path_out, optpaths=[shortbol_libs])
+            shb_run.parse_from_file(sbh_file.name, out=file_path_out, optpaths=[shortbol_libs])
 
         ################## END SECTION ####################################
     
