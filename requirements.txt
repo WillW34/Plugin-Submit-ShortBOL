@@ -1,8 +1,13 @@
 Click==7.0
 Flask==1.0.2
 itsdangerous==1.1.0
-Jinja2==2.11
+Jinja2==2.11.0
 MarkupSafe==1.1.1
-waitress==1.4.4
 Werkzeug==0.16.1
-requests
+waitress==1.4.4
+requests==2.25.1
+rdflib==5.0.0
+lxml==4.6.3
+ply==3.11
+pathlib==1.0.1
+pysbolgraph==0.2.0
