@@ -33,7 +33,7 @@ def evaluate():
         #"""file_type = file_name.split('.')[-1]
         #
         ##types that can be converted to sbol by this plugin
-        acceptable_types = {'txt', 'shb', 'rdfsh'}
+        acceptable_types = {'text/plain'}
     
         #types that can be converted to sbol by this plugin
         #acceptable_types = {'application/vnd.ms-excel',
@@ -63,7 +63,6 @@ def evaluate():
     
 @app.route("/run", methods=["POST"])
 def run():
-    cwd = os.getcwd()
     
     #create a temporary directory
     temp_dir = tempfile.TemporaryDirectory()
