@@ -1,117 +1,87 @@
-from flask import Flask, request, abort, send_file, jsonify
-import os, shutil, glob, random, string, tempfile, requests
+from flask import Flask, request, abort, send_from_directory, make_response
+import os, shutil, tempfile
 import sys
 sys.path.insert(0,'shortbol')
-import shortbol.run as shb_run
+import shortbol.SBOL2ShortBOL as SB2Short
+import requests
+
+shortbol_library = os.path.join("shortbol", "templates")
 
 app = Flask(__name__)
-shortbol_libs = os.path.join("shortbol", "templates")
 
 @app.route("/status")
 def status():
-    return("The Submit ShortBOL Test Plugin Flask Server is up and running")
-
-
+    return("The Download ShortBOL Plugin Flask Server is up and running")
 
 @app.route("/evaluate", methods=["POST"])
 def evaluate():
-    #uses MIME types
-    #https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-    
-    eval_manifest = request.get_json(force=True)
-    files = eval_manifest['manifest']['files']
-    
-    eval_response_manifest = {"manifest":[]}
-    
-    for file in files:
-        file_name = file['filename']
-        file_type = file['type']
-        file_url = file['url']
-        
-        ########## REPLACE THIS SECTION WITH OWN RUN CODE #################
-        ##IN THE SPECIAL CASE THAT THE EXTENSION HAS NO MIME TYPE USE SOMETHING LIKE THIS
-        #"""file_type = file_name.split('.')[-1]
-        #
-        ##types that can be converted to sbol by this plugin
-        acceptable_types = {'txt', 'shb', 'rdfsh'}
-    
-        #types that can be converted to sbol by this plugin
-        #acceptable_types = {'application/vnd.ms-excel',
-                            #'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
-        
-        #types that are useful (will be served to the run endpoint too but noted that they won't be converted)
-        useful_types = {'txt', 'shb', 'rdfsh'}
-        
-        file_type_acceptable = file_type in acceptable_types
-        file_type_useable = file_type in useful_types
-        print(file_type_acceptable,file_type_useable)
-        
-        ################## END SECTION ####################################
-        
-        if file_type_acceptable:
-            useableness = 2
-        elif file_type_useable:
-            useableness = 1
-        else:
-            useableness = 0
+    data = request.get_json(force=True)
+    rdf_type = data['type']
 
-        eval_response_manifest["manifest"].append({
-            "filename": file_name,
-            "requirement": useableness})
-             
-    return jsonify(eval_response_manifest)
-    
+    ########## REPLACE THIS SECTION WITH OWN RUN CODE #################
+    #uses rdf types
+    #Check if the SBOL designs will always be collections
+    accepted_types = {'Activity', 'Agent', 'Association', 'Attachment', 'Collection',
+                      'CombinatorialDerivation', 'Component', 'ComponentDefinition',
+                      'Cut', 'Experiment', 'ExperimentalData',
+                      'FunctionalComponent','GenericLocation',
+                      'Implementation', 'Interaction', 'Location',
+                      'MapsTo', 'Measure', 'Model', 'Module', 'ModuleDefinition'
+                      'Participation', 'Plan', 'Range', 'Sequence',
+                      'SequenceAnnotation', 'SequenceConstraint',
+                      'Usage', 'VariableComponent'}
+
+    acceptable = rdf_type in accepted_types
+
+    # #to ensure it shows up on all pages
+    # acceptable = True
+    ################## END SECTION ####################################
+
+    if acceptable:
+        return f'The type sent ({rdf_type}) is an accepted type', 200
+    else:
+        return f'The type sent ({rdf_type}) is NOT an accepted type', 415
+
 @app.route("/run", methods=["POST"])
 def run():
-    
-    #create a temporary directory
+    cwd = os.getcwd()
+
+    #temporary directory to write intermediate files to
     temp_dir = tempfile.TemporaryDirectory()
-    zip_in_dir_name = temp_dir.name
-    
-    #take in run manifest
-    run_manifest = request.get_json(force=True)
-    files = run_manifest['manifest']['files']
-        
-    #initiate response manifest
-    run_response_manifest = {"results":[]}
+    data = request.get_json(force=True)
 
-    for a_file in files:
-        file_name = a_file['filename']
-        file_type = a_file['type']
-        file_url = a_file['url']
-        data = str(a_file)
-        
-        converted_file_name = file_name + ".converted"
-        file_path_out = os.path.join(zip_in_dir_name, converted_file_name)
-        
+    complete_sbol = data['complete_sbol']
+
+    #url = complete_sbol.replace('/sbol', '')
+
+    try:
+
         ########## REPLACE THIS SECTION WITH OWN RUN CODE #################
-        
-        #Retrieve file from manifest
-        run_data = requests.get(file_url)
-        sbh_input = os.path.join(temp_dir.name,"temp_shb.txt")
-        with open(sbh_input,"w") as sbh_file:
-            sbh_file.write(run_data.text)
-            shb_run.parse_from_file(sbh_file.name, out=file_path_out, optpaths=[shortbol_libs])
 
+        file_in_name = os.path.join(cwd, "Test.html")
+        with open(file_in_name, 'r') as htmlfile:
+            result = htmlfile.read()
+
+        run_data = requests.get(complete_sbol)
+        sbol_input = os.path.join(temp_dir.name, "temp_shb.txt")
+        with open(sbol_input, 'w') as sbol_file:
+            sbol_file.write(run_data.text)
+        file_data = SB2Short.produce_shortbol(sbol_file.name, shortbol_library)
+
+        result = result.replace("FILE_REPLACE", file_data)
+
+        out_name = "Out.html"
+        file_out_name = os.path.join(temp_dir.name, out_name)
+        with open(file_out_name, 'w') as out_file:
+            out_file.write(result)
+
+        download_file_name = out_name
         ################## END SECTION ####################################
-    
-        # add name of converted file to manifest
-        run_response_manifest["results"].append({"filename":converted_file_name,
-                                "sources":[file_name]})
-            
+
+        return send_from_directory(temp_dir.name, download_file_name,
+                                   as_attachment=True, attachment_filename=out_name)
 
 
-
-    #create manifest file
-    file_path_out = os.path.join(zip_in_dir_name, "manifest.json")
-    with open(file_path_out, 'w') as manifest_file:
-            manifest_file.write(str(run_response_manifest)) 
-      
-    with tempfile.NamedTemporaryFile() as temp_file:
-        #create zip file of converted files and manifest
-        shutil.make_archive(temp_file.name, 'zip', zip_in_dir_name)
-        
-        #delete zip in directory
-        #shutil.rmtree(zip_in_dir_name)
-        #return zip file
-        return send_file(temp_file.name + ".zip")
+    except Exception as e:
+        print(e)
+        abort(400)
